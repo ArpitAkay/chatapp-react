@@ -1,16 +1,73 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
+import Layout from './Layout';
+import Home from './components/Home';
+import Chat from './components/Chat';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistStore } from 'redux-persist';
+import { store } from './redux/Store';
+import EmojiPicker from './components/EmojiPicker';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />
+  },
+  {
+    path: "/chat",
+    element: <Layout />,
+    children: [
+      {
+        path: "",
+        element: <Chat />
+      }
+    ]
+  },
+  {
+    path: "/emoji",
+    element: <Layout />,
+    children: [
+      {
+        path: "",
+        element: <EmojiPicker />
+      }
+    ]
+  }
+])
+
+
+//second method
+// const router = createBrowserRouter(
+//   createRoutesFromElements(
+//     <Route path='/' element={<Layout />} >
+//       <Route path='' element={<Home />} />
+//       <Route 
+//       // loader={}  // for calling api
+//       path='' 
+//       element={<Home />} 
+//       />
+//     </Route>
+//   )
+// )
+
+const persistor = persistStore(store);
+
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  // <React.StrictMode>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <RouterProvider router={router} />
+        {/* <App /> */}
+      </PersistGate>
+    </Provider>
+  // </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function
