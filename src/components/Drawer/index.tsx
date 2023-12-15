@@ -2,6 +2,8 @@ import { Box, Drawer, Stack, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { DrawerType } from "../../types/DrawerType";
 import Profile from "../Profile";
+import ContactInfo from "../ContactInfo"
+import Navbar from "../Navbar";
 
 interface DrawerProps {
   drawerType: DrawerType | null;
@@ -9,21 +11,22 @@ interface DrawerProps {
 }
 
 const lookup = {
-  Profile: Profile
+  'Contact info': ContactInfo,
+  'Profile': Profile
 };
 
 const Index = (props: DrawerProps) => {
-  // const Component = lookup[props.drawerType?.buttonInfo];
+  const Component: string  = lookup[props.drawerType?.buttonInfo];
 
   return (
     <Drawer
       variant={props.drawerType?.variant}
       anchor={props.drawerType?.anchor}
       open={props.drawerType?.open}
-      onClose={() => props.setDrawerType(null)}
       sx={
         props.drawerType?.anchor === "right"
           ? {
+              width: "30vw",
               backgroundColor: '#F0F2F5',
               flexShrink: 0,
               "& .MuiDrawer-paper": {
@@ -41,7 +44,8 @@ const Index = (props: DrawerProps) => {
           }
       }
     >
-      <Box
+      { props.drawerType?.buttonInfo === 'Contact info' &&  <Navbar name={props.drawerType?.buttonInfo} showName={true} setDrawerType={props.setDrawerType}/> }
+      { props.drawerType?.buttonInfo !== 'Contact info' &&  <Box
         sx={{
           height: "14%",
           backgroundColor: "#008069",
@@ -59,8 +63,8 @@ const Index = (props: DrawerProps) => {
             {props.drawerType?.buttonInfo}
           </Typography>
         </Stack>
-      </Box>
-      <Profile />
+      </Box>}
+      <Component />
     </Drawer>
   );
 };

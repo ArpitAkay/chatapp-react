@@ -5,7 +5,7 @@ interface EmojiPickerProps {
     anchorEl: null | HTMLElement
     setAnchorEl: (value: null | HTMLElement) => void
     value: string
-    setFunction: (value: string) => void;
+    setFunction?: (value: string) => void;
 }
 
 const Index = (props: EmojiPickerProps) => {
@@ -35,7 +35,7 @@ const Index = (props: EmojiPickerProps) => {
         }
       }
       >
-        <EmojiPicker onEmojiClick={(e) => props.setFunction(props.value.concat(" " + e.emoji))}/>
+        <EmojiPicker onEmojiClick={(e) => props.setFunction?.(props.value.concat(" " + e.emoji))}/>
       </Menu>
     </Box>
   )

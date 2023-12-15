@@ -14,8 +14,10 @@ import { APIResponse } from '../../types/ApiResponse';
 import { useNavigate } from 'react-router-dom';
 import { removeUserInfo } from '../../redux/slices/UserInfoSlice';
 import { setItem } from '../../storage/SessionStorage';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface NavbarProps {
+    avatar?: boolean;
     name?: string
     showName?: boolean;
     showSearchIcon?: boolean;
@@ -26,8 +28,8 @@ interface NavbarProps {
     showMoreVertSharpIcon?: boolean;
     chattingListMenuItem?: boolean;
     chattingInboxMenuItem?: boolean;
-    setIsChatBoxClosed: (value: boolean) => void
-    setDrawerType: (drawerType: DrawerType) => void
+    setIsChatBoxClosed?: (value: boolean) => void
+    setDrawerType: (drawerType: DrawerType | null) => void
 }
 
 const Index = (props: NavbarProps) => {
@@ -54,7 +56,7 @@ const Index = (props: NavbarProps) => {
                     variant: 'persistent',
                     anchor: 'left',
                     open: true,
-                    buttonInfo: ariaLabel
+                    buttonInfo: 'Profile'
                 });
                 break;
             case 'Contact info':
@@ -63,7 +65,7 @@ const Index = (props: NavbarProps) => {
                     variant: 'persistent',
                     anchor: 'right',
                     open: true,
-                    buttonInfo: ariaLabel
+                    buttonInfo: 'Contact info'
                 });
                 break;
             default:
@@ -112,16 +114,19 @@ const Index = (props: NavbarProps) => {
     <AppBar position='static' sx={{backgroundColor: '#F0F2F5'}}>
         <Toolbar>
             <Stack spacing={2} direction={'row'} sx={{flexGrow: 1}}>
-                <IconButton aria-label='Profile' sx={{padding: '0px'}} onClick={handleDrawerOpenClick}>
+                { props.avatar && <IconButton aria-label='Profile' sx={{padding: '0px'}} onClick={handleDrawerOpenClick} disableRipple>
                     <Avatar src='' alt='Profile' sx={{width: 42, height: 42}}/>
-                </IconButton>
+                </IconButton> }
+                { !props.avatar && <IconButton aria-label='Profile' sx={{padding: '0px'}} onClick={() => props.setDrawerType(null)} disableRipple>
+                    <CloseIcon color='inherit' />
+                </IconButton> }
                 <Stack sx={ !showTemporaryButton ? {display: 'flex', justifyContent: 'center'} : {}}>
                     {props.showName && <Typography aria-label='Contact info' variant='body1' color={'black'} onClick={handleDrawerOpenClick} sx={{
                         '&:hover': {
                             cursor: 'pointer'
                         }
                     }}>{props.name}</Typography>}
-                    {(props.showName && showTemporaryButton) && <Typography aria-label='Contact info' variant='body2' color={'black'} onClick={handleDrawerOpenClick} sx={{
+                    {(props.avatar && props.showName && showTemporaryButton) && <Typography aria-label='Contact info' variant='body2' color={'black'} onClick={handleDrawerOpenClick} sx={{
                         '&:hover': {
                             cursor: 'pointer'
                         }
@@ -186,11 +191,14 @@ const Index = (props: NavbarProps) => {
                     }
                     {props.chattingInboxMenuItem &&
                         <Box>
-                            <MenuItem aria-label='Contact info' onClick={handleDrawerOpenClick}>Contact info</MenuItem>
+                            <MenuItem aria-label='Contact info' onClick={(event) => {
+                                handleDrawerOpenClick(event);
+                                setAnchorEl(null);
+                            }}>Contact info</MenuItem>
                             <MenuItem aria-label='Select messages'>Select messages</MenuItem>
                             <MenuItem onClick={() => {
                                 setItem('selectedChatBox', null)
-                                props.setIsChatBoxClosed(true);
+                                props.setIsChatBoxClosed?.(true);
                             }}>Close chat</MenuItem >
                             <MenuItem aria-label='Mute notifications'>Mute notifications</MenuItem>
                             <MenuItem aria-label='Disappearing messages' onClick={handleDrawerOpenClick}>Disappearing messages</MenuItem>

@@ -1,6 +1,6 @@
-import { Avatar, Box, Menu, MenuItem, Typography } from '@mui/material'
+import { Avatar, Box, Hidden, Menu, MenuItem, TextField, Typography } from '@mui/material'
 import Data from '../Data'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { WebServiceInvokerRest } from '../../util/WebServiceInvokerRest'
 import { APIResponse } from '../../types/ApiResponse'
 import { useDispatch, useSelector } from 'react-redux'
@@ -16,6 +16,9 @@ const Index = () => {
     const [coordinates, setCoordinates] = useState<{x: number, y: number}>({x: 0, y: 0});
     const userInfoSelector = useSelector((state: any) => state.userInfo);
     const dispatch = useDispatch();
+    const [profilePic, setProfilePic] = useState<File>();
+    const [profilePicBase64, setProfilePicBase64] = useState<string>();
+    const profilePictureRef = useRef<HTMLInputElement>(null);
 
     const fetchUserInfo = async () => {
       const hostname = process.env.REACT_APP_HOST_AND_PORT;
@@ -51,7 +54,6 @@ const Index = () => {
     }
 
     const updateUserInformation = async () => {
-      alert("update user information");
       const hostname = process.env.REACT_APP_HOST_AND_PORT;
       const urlContent = process.env.REACT_APP_UPDATE_USER_INFO
       if(hostname === undefined || urlContent === undefined) {
@@ -97,6 +99,18 @@ const Index = () => {
       }
     }
 
+    const handleProfilePicture = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.item(0);
+      if(file) {
+        setProfilePic(file)
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => {
+          if (reader.result) setProfilePicBase64(reader.result.toString());
+        }
+      }
+    }
+
     useEffect(() => {
       fetchUserInfo();
       // eslint-disable-next-line
@@ -105,11 +119,15 @@ const Index = () => {
   return (
     <Box >
         <Box sx={{display: 'flex', justifyContent: 'center', paddingY: 4}}>
-            <Avatar sx={{width: '200px', height: '200px'}} 
+            <Avatar 
+            src={profilePicBase64}
+            alt='Profile picture'
+            sx={{width: '200px', height: '200px'}} 
             onClick={(e) => {
               setAnchorEl(e.currentTarget)
               setCoordinates({x: e.clientX, y: e.clientY})
             }}/>
+            <input type='file' ref={profilePictureRef} onChange={handleProfilePicture} accept='image/x-png,image/gif,image/jpeg' hidden/>
             <Menu 
             anchorEl={anchorEl} 
             open={open} 
@@ -118,11 +136,14 @@ const Index = () => {
             anchorReference="anchorPosition"
             >
               <MenuItem>Take Photo</MenuItem>
-              <MenuItem>Upload Photo</MenuItem>
+              <MenuItem onClick={() => {
+                profilePictureRef.current?.click()
+                setAnchorEl(null)
+              }}>Upload Photo</MenuItem>
             </Menu>
         </Box>
         <Box sx={{backgroundColor: '#FFFFFF', paddingX: 4, paddingY: 2}}>
-            <Data label={'Your name'} value={username} setFunction={setUsername} updateUserInformation={updateUserInformation}/>
+            <Data label={'Your name'} labelColor={'#008069'} value={username} setFunction={setUsername} updateUserInformation={updateUserInformation}/>
         </Box>
         <Box sx={{paddingX: 4, paddingTop: 2, paddingBottom: 4}}>
           <Typography variant='subtitle2'>
@@ -130,7 +151,7 @@ const Index = () => {
           </Typography>
         </Box>
         <Box sx={{backgroundColor: '#FFFFFF', paddingX: 4, paddingY: 2}}>
-            <Data label={'About'} value={status} setFunction={setStatus} updateUserInformation={updateUserInformation}/>
+            <Data label={'About'} labelColor={'#008069'} value={status} setFunction={setStatus} updateUserInformation={updateUserInformation}/>
         </Box>
     </Box>
   )

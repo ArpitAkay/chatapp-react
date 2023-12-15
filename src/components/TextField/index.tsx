@@ -5,11 +5,10 @@ interface TextFieldProps {
     variant: 'filled' | 'outlined' | 'standard'
     label: string
     value: string
-    setFunction: (value: string) => void;
+    setFunction?: (value: string) => void;
     multiline?: boolean
     endAdornment?: React.ReactNode
     edit?: boolean
-    setEdit?: (value: boolean) => void;
 }
 
 const Index = (props: TextFieldProps) => {
@@ -25,7 +24,7 @@ const Index = (props: TextFieldProps) => {
     size='small' 
     fullWidth 
     value={props.value}
-    onChange={(e) => props.setFunction(e.target.value)}
+    onChange={(e) => props.setFunction?.(e.target.value)}
     multiline={props.multiline}
     maxRows={2}
     InputProps={{

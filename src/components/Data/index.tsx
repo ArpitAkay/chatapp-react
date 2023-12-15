@@ -8,9 +8,10 @@ import EmojiPicker from '../EmojiPicker';
 
 interface DataProps {
     label: string
+    labelColor: string
     value: string
-    setFunction: (value: string) => void;
-    updateUserInformation: () => Promise<void>;
+    setFunction?: (value: string) => void;
+    updateUserInformation?: () => Promise<void>;
 }
 
 const Index = (props: DataProps) => {
@@ -19,10 +20,10 @@ const Index = (props: DataProps) => {
 
   return (
     <Stack spacing={1}>
-        <Typography variant='subtitle2' color={'#008069'}>{props.label}</Typography>
+        <Typography variant='body2' color={props.labelColor}>{props.label}</Typography>
         <EmojiPicker anchorEl={anchorEl} setAnchorEl={setAnchorEl} value={props.value} setFunction={props.setFunction}/>
         <TextField variant={'standard'} label='' value={props.value} setFunction={props.setFunction} endAdornment={
-          <Stack direction='row' spacing={0}>
+          props.setFunction && <Stack direction='row' spacing={0}>
           {
             edit && <IconButton
             edge="end"
@@ -38,7 +39,7 @@ const Index = (props: DataProps) => {
             disableRipple
             onClick={() => {
               setEdit(!edit)
-              props.updateUserInformation()
+              props.updateUserInformation?.()
             }}
             >
               <DoneIcon />
@@ -54,7 +55,7 @@ const Index = (props: DataProps) => {
             </IconButton>
           }
         </Stack>
-        } edit={edit} setEdit={setEdit}/>
+        } edit={edit}/>
     </Stack>
   )
 }

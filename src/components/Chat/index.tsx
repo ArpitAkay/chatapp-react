@@ -34,10 +34,11 @@ const Index = () => {
   const [encryptionInfoDialogBox, setEncryptionInfoDialogBox] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
   const [socketState, setSocketState] = useState<boolean>(false);
-  const [ischatBoxClosed, setIsChatBoxClosed] = useState<boolean>(true);
+  const [isChatBoxClosed, setIsChatBoxClosed] = useState<boolean>(true);
   const userInfoSelector = useSelector((state: any) => state.userInfo);
   const [messageList, setMessageList] = useState<Message[]>([]);
-  const [drawerType, setDrawerType] = useState<DrawerType | null>(null);
+  const [leftDrawerType, setLeftDrawerType] = useState<DrawerType | null>(null);
+  const [rightDrawerType, setRightDrawerType] = useState<DrawerType | null>(null);
   const paperRef = useRef<HTMLDivElement | null>(null);
   const audio = new Audio('/audio/chatapp_newmessage.mp3');
   const notificationPermissionSelector = useSelector((state: any) => state.notificationPermission);
@@ -112,7 +113,6 @@ const Index = () => {
   }
 
   const fetchOlderMessages = async () => {
-    alert("fetch older messages");
     pageNo.current += 1;
 
     const hostname = process.env.REACT_APP_HOST_AND_PORT;
@@ -343,6 +343,7 @@ const Index = () => {
     return () => {
       cleanup();
     };
+  // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -364,8 +365,8 @@ const Index = () => {
 
   return (
     <Box sx={{ width: "100vw", height: "100vh", display: "flex" }}>
-      <Box sx={{ width: "30%", height: "100%" }}>
-        <Navbar showCommunityIcon={true} showStatusIcon={true} showChannelIcon={true} showNewChatIcon={true} showMoreVertSharpIcon={true} chattingListMenuItem={true} setIsChatBoxClosed={setIsChatBoxClosed} setDrawerType={setDrawerType}/>
+      <Box sx={{ width: "30%", height: "100%", minWidth: '30%' }}>
+        <Navbar avatar={true} showCommunityIcon={true} showStatusIcon={true} showChannelIcon={true} showNewChatIcon={true} showMoreVertSharpIcon={true} chattingListMenuItem={true} setIsChatBoxClosed={setIsChatBoxClosed} setDrawerType={setLeftDrawerType}/>
         <Stack spacing={1} direction={"row"} p={1}>
           <Box width={'88%'} padding={'2px'}>
               <Searchbar />
@@ -406,7 +407,7 @@ const Index = () => {
         sx={{ width: "70%", height: "100%" }}
       >
         {
-          ischatBoxClosed && 
+          isChatBoxClosed && 
           <Box sx={{
             width: '100%',
             height: '100%',
@@ -440,9 +441,9 @@ const Index = () => {
                 </Box>
           </Box>
         }
-        {!ischatBoxClosed && 
+        {!isChatBoxClosed && 
           <>
-            <Navbar name={getItem<UserInfo>('selectedChatBox')?.name} showName={true} showSearchIcon={true} showMoreVertSharpIcon={true} chattingInboxMenuItem={true} setIsChatBoxClosed={setIsChatBoxClosed} setDrawerType={setDrawerType}/>
+            <Navbar avatar={true} name={getItem<UserInfo>('selectedChatBox')?.name} showName={true} showSearchIcon={true} showMoreVertSharpIcon={true} chattingInboxMenuItem={true} setIsChatBoxClosed={setIsChatBoxClosed} setDrawerType={setRightDrawerType}/>
             <Paper sx={{height: "83%", background: '#efebe9', backgroundImage: `url(${chatInboxBackgroundImage})`, overflow: 'auto', scrollbarGutter: 'stable' }} ref={paperRef}>
               <ChatInbox messageList={messageList}/>
             </Paper>
@@ -451,7 +452,8 @@ const Index = () => {
         }
       </Box>
       <Box>
-        <Drawer drawerType={drawerType} setDrawerType={setDrawerType}/>
+        { leftDrawerType?.anchor === 'left' &&  <Drawer drawerType={leftDrawerType} setDrawerType={setLeftDrawerType}/> }
+        { rightDrawerType?.anchor === 'right' && <Drawer drawerType={rightDrawerType} setDrawerType={setRightDrawerType}/> }
       </Box>
     </Box>
   );
