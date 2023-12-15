@@ -96,7 +96,6 @@ const Index = (props: NavbarProps) => {
         if(response.status === 200) {
             navigate('/');
             dispatch(removeUserInfo())
-            console.log("Successfully deleted user info");
         }
         else {
           console.log("Error while deleting user info");

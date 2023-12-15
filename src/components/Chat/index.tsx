@@ -44,8 +44,9 @@ const Index = () => {
   const dispatch = useDispatch();
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const stompClient = useRef<Client | null>(null);
-  const [pageNo, setPageNo] = useState<number>(0);
+  const pageNo = useRef<number>(0);
   const [scrollToBottom, setScrollToBottom] = useState<boolean>(false);
+  const [scrollToBottomForOlderMessages, setScrollToBottomForOlderMessages] = useState<boolean>(false);
   const isLastPage = useRef<boolean>(true);
 
   const checkWebSiteStatus = () => {
@@ -111,9 +112,9 @@ const Index = () => {
   }
 
   const fetchOlderMessages = async () => {
-    if(pageNo === 0) {
-      return;
-    }
+    alert("fetch older messages");
+    pageNo.current += 1;
+
     const hostname = process.env.REACT_APP_HOST_AND_PORT;
     const urlContent = process.env.REACT_APP_CHAT_PRIVATE_MESSAGES
     if(hostname === undefined || urlContent === undefined) {
@@ -126,7 +127,7 @@ const Index = () => {
     }
 
     const chatParams: ChatParam = {
-      pageNo: pageNo,
+      pageNo: pageNo.current,
       pageSize: 50,
       senderId: userInfoSelector.id,
       receiverId: receiverId
@@ -148,6 +149,8 @@ const Index = () => {
     else {
       console.log("Error while fetching chatting list");
     }
+
+    setScrollToBottomForOlderMessages(true);
   }
 
   const connectToSocket = () => {
@@ -263,7 +266,7 @@ const Index = () => {
   }
 
   const handleSelectedChatBoxClick = async (id: number, name: string) => {
-    setPageNo(0);
+    pageNo.current = 0;
     setIsChatBoxClosed(false);
     const selectedChatBox: UserInfo = {
       id: id,
@@ -277,7 +280,7 @@ const Index = () => {
     }
 
     const chatParams: ChatParam = {
-      pageNo: 0,
+      pageNo: pageNo.current,
       pageSize: 50,
       senderId: userInfoSelector.id,
       receiverId: id
@@ -300,27 +303,27 @@ const Index = () => {
       console.log("Error while fetching chatting list");
     }
 
-    // const paperElem = paperRef.current;
-    // if(paperElem) {
-    //   paperElem.addEventListener('scroll', handleScrollOnPaperRef);
-    // }
+    const paperElem = paperRef.current;
+    if(paperElem && !isLastPage.current) {
+      paperElem.addEventListener('scroll', handleScrollOnPaperRef);
+    }
 
     setScrollToBottom(true);
   }
 
   const handleScrollOnPaperRef = () => {
     const paperElem = paperRef.current;
-    console.log(paperElem?.scrollTop, paperElem?.scrollHeight, paperElem?.clientHeight);
     if(paperElem) {
       if(paperElem.scrollTop === 0 && !isLastPage.current) {
-        setPageNo(pageNo => pageNo + 1);
+        fetchOlderMessages();
+      } else if(isLastPage.current) {
+        paperElem.removeEventListener('scroll', handleScrollOnPaperRef);
       }
     }
   }
 
   const scrollContentToBottom = () => {
     const paperRefElem = paperRef.current;
-    console.log(paperRefElem?.scrollTop, paperRefElem?.scrollHeight, paperRefElem?.clientHeight);
     if (paperRefElem) {
       paperRefElem.scrollTop = paperRefElem.scrollHeight;
     }
@@ -343,15 +346,21 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    fetchOlderMessages();
-  }, [pageNo]);
-
-  useEffect(() => {
     if(scrollToBottom) {
       scrollContentToBottom();
       setScrollToBottom(false);
     }
   }, [scrollToBottom]);
+
+  useEffect(() => {
+    if(scrollToBottomForOlderMessages) {
+      const paperElem = paperRef.current;
+      if(paperElem) {
+        paperElem.scrollTop = paperElem.scrollHeight / (pageNo.current + 1);
+      }
+      setScrollToBottomForOlderMessages(false);
+    }
+  }, [scrollToBottomForOlderMessages]);
 
   return (
     <Box sx={{ width: "100vw", height: "100vh", display: "flex" }}>
