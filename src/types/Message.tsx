@@ -5,5 +5,5 @@ export interface Message {
     senderName: string;
     receiverId?: number;
     receiverName?: string;
-    timestamp: Date;
+    timestamp: string;
 }

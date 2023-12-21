@@ -10,6 +10,7 @@ const Index = () => {
   const [userId, setUserId] = useState<number>(0);
   const [name, setName] = useState<string>('');
   const [status, setStatus] = useState<string>('');
+  const [profileImageUrl, setProfileImageUrl] = useState<string>('');
 
   const fetchContactInfo = async () => {
     const hostname = process.env.REACT_APP_HOST_AND_PORT;
@@ -42,6 +43,7 @@ const Index = () => {
       setUserId(response.data.id);
       setName(response.data.name);
       setStatus(response.data.profileStatus);
+      setProfileImageUrl(response.data.profileImageUrl);
     }
     else {
       console.log("Error while fetching chatting list");
@@ -56,6 +58,8 @@ const Index = () => {
     <Box sx={{backgroundColor: '#F0F2F5', height: '100%'}}>
       <Box sx={{padding: 4, backgroundColor: '#FFFFFF', display: 'flex', flexDirection: 'column',justifyContent: 'center', alignItems: 'center'}}>
         <Avatar
+        src={profileImageUrl}
+        alt="Profile Image"
         sx={{width: '200px', height: '200px'}}
         />
         <Typography variant='h5' color='inherit' mt={2}>{name}</Typography>

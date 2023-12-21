@@ -9,7 +9,6 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistStore } from 'redux-persist';
 import { store } from './redux/Store';
-import EmojiPicker from './components/EmojiPicker';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -27,16 +26,6 @@ const router = createBrowserRouter([
       {
         path: "",
         element: <Chat />
-      }
-    ]
-  },
-  {
-    path: "/emoji",
-    element: <Layout />,
-    children: [
-      {
-        path: "",
-        element: <EmojiPicker />
       }
     ]
   }

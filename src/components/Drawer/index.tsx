@@ -11,12 +11,24 @@ interface DrawerProps {
 }
 
 const lookup = {
+  'Communities': Profile,
+  'Status': Profile,
+  'Channels': Profile,
+  'New chat': Profile,
+  'Profile': Profile,
+  'New group': Profile,
+  'New community': Profile,
+  'Starred messages': Profile,
+  'Settings': Profile,
   'Contact info': ContactInfo,
-  'Profile': Profile
+  'Disappearing messages': ContactInfo
 };
 
 const Index = (props: DrawerProps) => {
-  const Component: string  = lookup[props.drawerType?.buttonInfo];
+  const Component = props.drawerType  && props.drawerType.buttonInfo ? lookup[props.drawerType?.buttonInfo] : lookup['Communities'];
+
+  console.log(Component);
+
 
   return (
     <Drawer

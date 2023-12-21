@@ -3,7 +3,9 @@ import { createSlice } from "@reduxjs/toolkit"
 const initialState = {
     id: 0,
     name: '',
-    active: false
+    active: false,
+    status: '',
+    imageUrl: ''
 }
 
 export const userInfoSlice = createSlice({
@@ -19,12 +21,18 @@ export const userInfoSlice = createSlice({
             state.id = 0;
             state.name = '';
             state.active = false;
+            state.status = '';
+            state.imageUrl = '';
         },
         updateUserInfo: (state, action) => {
             state.name = action.payload.name;
+            state.status = action.payload.profileStatus;
+        },
+        updateProfileImageUrl: (state, action) => {
+            state.imageUrl = action.payload.profileImageUrl;
         }
     }
 });
 
-export const { setUserInfo, removeUserInfo, updateUserInfo } = userInfoSlice.actions;
+export const { setUserInfo, removeUserInfo, updateUserInfo, updateProfileImageUrl } = userInfoSlice.actions;
 export default userInfoSlice.reducer;

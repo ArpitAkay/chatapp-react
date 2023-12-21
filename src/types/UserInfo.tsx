@@ -3,6 +3,7 @@ export interface UserInfo {
     name: string
     active?: boolean,
     profileStatus?: string,
+    profileImageUrl?: string
 }
 
 export interface UserInfoResponse extends UserInfo {

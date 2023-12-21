@@ -21,6 +21,7 @@ import { DrawerType } from "../../types/DrawerType";
 import { setNotificationPermission } from "../../redux/slices/NotificationPermission";
 import InternetIssue from "../InternetIssue";
 import { getItem, setItem } from "../../storage/SessionStorage";
+import { updateProfileImageUrl, updateUserInfo } from "../../redux/slices/UserInfoSlice";
 
 interface ChatParam {
   pageNo: number,
@@ -42,6 +43,7 @@ const Index = () => {
   const paperRef = useRef<HTMLDivElement | null>(null);
   const audio = new Audio('/audio/chatapp_newmessage.mp3');
   const notificationPermissionSelector = useSelector((state: any) => state.notificationPermission);
+  const hasInteractedWithDom = useRef<boolean>(false);
   const dispatch = useDispatch();
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const stompClient = useRef<Client | null>(null);
@@ -57,6 +59,9 @@ const Index = () => {
     window.addEventListener('offline', () => {
       setIsOnline(false);
     });
+    window.document.addEventListener('click', () => {
+      hasInteractedWithDom.current = true;
+    });
 
     return () => {
       window.removeEventListener('online', () => {
@@ -64,6 +69,9 @@ const Index = () => {
       });
       window.removeEventListener('offline', () => {
         setIsOnline(false);
+      });
+      window.document.addEventListener('click', () => {
+        hasInteractedWithDom.current = true;
       });
     };
   }
@@ -153,6 +161,42 @@ const Index = () => {
     setScrollToBottomForOlderMessages(true);
   }
 
+  const fetchUserInfo = async () => {
+    const hostname = process.env.REACT_APP_HOST_AND_PORT;
+    const urlContent = process.env.REACT_APP_GET_USER_INFO
+    if(hostname === undefined || urlContent === undefined) {
+      return;
+    }
+
+    const userInfoParams: {
+      id: number
+    } = {
+      id: userInfoSelector.id,
+    }
+
+    const response: APIResponse = await WebServiceInvokerRest<null, null, { id: number }, APIResponse>(
+      hostname,
+      urlContent,
+      "GET",
+      null,
+      null,
+      userInfoParams
+    );
+
+    if(response.status === 200) {
+      dispatch(updateUserInfo({
+        name: response.data.name,
+        profileStatus: response.data.profileStatus
+      }))
+      dispatch(updateProfileImageUrl({
+        profileImageUrl: response.data.profileImageUrl
+      }))
+    }
+    else {
+      console.log("Error while fetching chatting list");
+    }
+  }
+
   const connectToSocket = () => {
     if(socketState) {
       return;
@@ -189,11 +233,15 @@ const Index = () => {
   const onMessageReceived = async (payload: any) => {
     const messageReceived: Message = JSON.parse(payload.body);
     if(notificationPermissionSelector.permission) {
-      audio.play();
+      if(hasInteractedWithDom.current) {
+        audio.play();
+      }
     }
     else {
       askNotificationPermission();
     }
+
+    // messageReceived.content = messageReceived.content.replace(/\\n/g, '\n');
 
     setChattingList((chattingList) => {
       return chattingList.map((chatting) => {
@@ -201,7 +249,7 @@ const Index = () => {
           return {
             ...chatting,
             latestMessage: messageReceived.content,
-            latestMessageTime: new Date().toString(),
+            latestMessageTime: messageReceived.timestamp
           };
         }
         return chatting;
@@ -236,7 +284,7 @@ const Index = () => {
         senderName: userInfoSelector.name,
         receiverId: getItem<UserInfo>("selectedChatBox")?.id,
         receiverName: getItem<UserInfo>("selectedChatBox")?.name,
-        timestamp: new Date()
+        timestamp: new Date().toISOString(),
       };
 
       const sendMessageUrl = process.env.REACT_APP_SEND_MESSAGE_URL;
@@ -252,7 +300,7 @@ const Index = () => {
             return {
               ...chatting,
               latestMessage: messageToSend.content,
-              latestMessageTime: new Date().toString(),
+              latestMessageTime: new Date().toISOString(),
             };
           }
           return chatting;
@@ -265,12 +313,13 @@ const Index = () => {
     setScrollToBottom(true);
   }
 
-  const handleSelectedChatBoxClick = async (id: number, name: string) => {
+  const handleSelectedChatBoxClick = async (id: number, name: string, profileImageUrl: string | undefined) => {
     pageNo.current = 0;
     setIsChatBoxClosed(false);
     const selectedChatBox: UserInfo = {
       id: id,
-      name: name
+      name: name,
+      profileImageUrl: profileImageUrl
     }
     setItem<UserInfo>("selectedChatBox", selectedChatBox);
     const hostname = process.env.REACT_APP_HOST_AND_PORT;
@@ -338,6 +387,7 @@ const Index = () => {
     const cleanup = checkWebSiteStatus();
     askNotificationPermission();
     fetchChattingList();
+    fetchUserInfo();
     connectToSocket();
 
     return () => {
@@ -366,7 +416,7 @@ const Index = () => {
   return (
     <Box sx={{ width: "100vw", height: "100vh", display: "flex" }}>
       <Box sx={{ width: "30%", height: "100%", minWidth: '30%' }}>
-        <Navbar avatar={true} showCommunityIcon={true} showStatusIcon={true} showChannelIcon={true} showNewChatIcon={true} showMoreVertSharpIcon={true} chattingListMenuItem={true} setIsChatBoxClosed={setIsChatBoxClosed} setDrawerType={setLeftDrawerType}/>
+        <Navbar avatar={true} avatarUrl={userInfoSelector.imageUrl} showCommunityIcon={true} showStatusIcon={true} showChannelIcon={true} showNewChatIcon={true} showMoreVertSharpIcon={true} chattingListMenuItem={true} setIsChatBoxClosed={setIsChatBoxClosed} setDrawerType={setLeftDrawerType}/>
         <Stack spacing={1} direction={"row"} p={1}>
           <Box width={'88%'} padding={'2px'}>
               <Searchbar />
@@ -404,7 +454,7 @@ const Index = () => {
         </Paper>
       </Box>
       <Box
-        sx={{ width: "70%", height: "100%" }}
+        sx={{ width: "70%", height: "100%", backgroundColor: "#F0F2F5" }}
       >
         {
           isChatBoxClosed && 
@@ -443,7 +493,7 @@ const Index = () => {
         }
         {!isChatBoxClosed && 
           <>
-            <Navbar avatar={true} name={getItem<UserInfo>('selectedChatBox')?.name} showName={true} showSearchIcon={true} showMoreVertSharpIcon={true} chattingInboxMenuItem={true} setIsChatBoxClosed={setIsChatBoxClosed} setDrawerType={setRightDrawerType}/>
+            <Navbar avatar={true} avatarUrl={getItem<UserInfo>('selectedChatBox')?.profileImageUrl} name={getItem<UserInfo>('selectedChatBox')?.name}  showName={true} showSearchIcon={true} showMoreVertSharpIcon={true} chattingInboxMenuItem={true} setIsChatBoxClosed={setIsChatBoxClosed} setDrawerType={setRightDrawerType}/>
             <Paper sx={{height: "83%", background: '#efebe9', backgroundImage: `url(${chatInboxBackgroundImage})`, overflow: 'auto', scrollbarGutter: 'stable' }} ref={paperRef}>
               <ChatInbox messageList={messageList}/>
             </Paper>

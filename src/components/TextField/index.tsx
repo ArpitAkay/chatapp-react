@@ -7,6 +7,8 @@ interface TextFieldProps {
     value: string
     setFunction?: (value: string) => void;
     multiline?: boolean
+    maxRows?: number
+    maxLength?: number
     endAdornment?: React.ReactNode
     edit?: boolean
 }
@@ -27,12 +29,14 @@ const Index = (props: TextFieldProps) => {
     onChange={(e) => props.setFunction?.(e.target.value)}
     multiline={props.multiline}
     maxRows={2}
+    inputProps={{
+      ...(props.maxLength && {maxLength: props.maxLength})
+    }}
     InputProps={{
       ...(props.variant !== 'outlined'
         ? { disableUnderline: props.edit !== undefined && !props.edit }
         : {}
       ),
-      // disableUnderline: props.edit !== undefined && !props.edit,
       readOnly: props.edit !== undefined && !props.edit,
       endAdornment: ( props.endAdornment && 
         <InputAdornment position="start">

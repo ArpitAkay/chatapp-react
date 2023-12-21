@@ -68,6 +68,12 @@ const Index = (props: ChatInboxFooterProps) => {
           alignItems: 'center'
         }}
         onSubmit={(event) => props.sendMessage(event)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            props.sendMessage(event);
+          }
+        }}
         >
             <TextField variant={'outlined'} label={'Type a message'} value={props.messageValue} setFunction={props.setMessageFunction} multiline={true}/>
             {props.messageValue.trim() === '' && <IconButton aria-label='Mike-icon'>

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
 interface Config {
     method: string;
@@ -34,6 +34,16 @@ export const WebServiceInvokerRest = async <T, U, V, X>(
         config.params = requestParams;
     }
 
+    axios.interceptors.request.use(
+        function (requestConfig) {
+            console.log("Request sent:", requestConfig);
+            return requestConfig;
+        },
+        function (error) {
+            return Promise.reject(error);
+        }
+    );
+
     let response: any;
     try {
         response = await axios(config);
@@ -41,6 +51,16 @@ export const WebServiceInvokerRest = async <T, U, V, X>(
     catch (err: any) {
         response = err.response;
     }
+
+    axios.interceptors.response.use(
+        function (response: AxiosResponse) {
+            console.log("Response received:", response);
+            return response;
+        },
+        function (error) {
+            return Promise.reject(error);
+        }
+    );
 
     return response;
 }

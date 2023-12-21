@@ -18,6 +18,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 interface NavbarProps {
     avatar?: boolean;
+    avatarUrl?: string;
     name?: string
     showName?: boolean;
     showSearchIcon?: boolean;
@@ -42,6 +43,7 @@ const Index = (props: NavbarProps) => {
 
     const handleDrawerOpenClick = (event: React.MouseEvent<HTMLElement>) => {
         const ariaLabel = event.currentTarget.ariaLabel;
+        console.log(ariaLabel);
         switch(ariaLabel) {
             case 'Communities':
             case 'Status':
@@ -56,7 +58,7 @@ const Index = (props: NavbarProps) => {
                     variant: 'persistent',
                     anchor: 'left',
                     open: true,
-                    buttonInfo: 'Profile'
+                    buttonInfo: ariaLabel
                 });
                 break;
             case 'Contact info':
@@ -65,7 +67,7 @@ const Index = (props: NavbarProps) => {
                     variant: 'persistent',
                     anchor: 'right',
                     open: true,
-                    buttonInfo: 'Contact info'
+                    buttonInfo: ariaLabel
                 });
                 break;
             default:
@@ -75,7 +77,7 @@ const Index = (props: NavbarProps) => {
 
     const logoutUser = async () => {
         const hostname = process.env.REACT_APP_HOST_AND_PORT;
-        const urlContent = process.env.REACT_APP_DELETE_USER_INFO;
+        const urlContent = process.env.REACT_APP_LOGOUT_USER_INFO;
         if(hostname === undefined || urlContent === undefined) {
           return;
         }
@@ -102,7 +104,7 @@ const Index = (props: NavbarProps) => {
         else {
           console.log("Error while deleting user info");
         }
-      }
+    }
 
     useEffect(() => {
         setTimeout(() => {
@@ -114,8 +116,8 @@ const Index = (props: NavbarProps) => {
     <AppBar position='static' sx={{backgroundColor: '#F0F2F5'}}>
         <Toolbar>
             <Stack spacing={2} direction={'row'} sx={{flexGrow: 1}}>
-                { props.avatar && <IconButton aria-label='Profile' sx={{padding: '0px'}} onClick={handleDrawerOpenClick} disableRipple>
-                    <Avatar src='' alt='Profile' sx={{width: 42, height: 42}}/>
+                { props.avatar && <IconButton aria-label={props.showName ? 'Contact info' : 'Profile'} sx={{padding: '0px'}} onClick={handleDrawerOpenClick} disableRipple>
+                    <Avatar src={props.avatarUrl} alt='Profile' sx={{width: 42, height: 42}}/>
                 </IconButton> }
                 { !props.avatar && <IconButton aria-label='Profile' sx={{padding: '0px'}} onClick={() => props.setDrawerType(null)} disableRipple>
                     <CloseIcon color='inherit' />
