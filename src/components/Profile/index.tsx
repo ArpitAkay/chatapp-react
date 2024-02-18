@@ -5,6 +5,7 @@ import { WebServiceInvokerRest } from '../../util/WebServiceInvokerRest'
 import { APIResponse } from '../../types/ApiResponse'
 import { useDispatch, useSelector } from 'react-redux'
 import { updateProfileImageUrl, updateUserInfo } from '../../redux/slices/UserInfoSlice'
+import Dialog from '../Dialog'
 
 const Index = () => {
     const userInfoSelector = useSelector((state: any) => state.userInfo);
@@ -14,9 +15,8 @@ const Index = () => {
     const open = Boolean(anchorEl);
     const [coordinates, setCoordinates] = useState<{x: number, y: number}>({x: 0, y: 0});
     const dispatch = useDispatch();
-    const [profileImageUrl, setProfileImageUrl] = useState<string>('');
     const profilePictureRef = useRef<HTMLInputElement>(null);
-    console.log("userInfoSelector.status : " + userInfoSelector.status);
+    const [isTakePhotoDialogOpen, setIsTakePhotoDialogOpen] = useState<boolean>(false);
 
     const updateUserInformation = async () => {
       const hostname = process.env.REACT_APP_HOST_AND_PORT;
@@ -67,6 +67,7 @@ const Index = () => {
 
     const handleProfilePicture = async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.item(0);
+      console.log(file);
       if(file) {
         const hostname = process.env.REACT_APP_HOST_AND_PORT;
         const urlContent = process.env.REACT_APP_UPLOAD_PROFILE_IMAGE
@@ -94,7 +95,6 @@ const Index = () => {
         );
 
         if(response.status === 200) {
-          setProfileImageUrl(response.data.profileImageUrl);
           dispatch(updateProfileImageUrl({
             profileImageUrl: response.data.profileImageUrl
           }));
@@ -124,12 +124,13 @@ const Index = () => {
             anchorPosition={{ top: coordinates.y, left: coordinates.x }}
             anchorReference="anchorPosition"
             >
-              <MenuItem>Take Photo</MenuItem>
+              <MenuItem onClick={() => setIsTakePhotoDialogOpen(true)}>Take Photo</MenuItem>
               <MenuItem onClick={() => {
                 profilePictureRef.current?.click()
                 setAnchorEl(null)
               }}>Upload Photo</MenuItem>
             </Menu>
+            <Dialog dialogType="DialogTakePhoto" isDialogBoxOpen={isTakePhotoDialogOpen} setIsDialogBoxOpen={setIsTakePhotoDialogOpen}/>
         </Box>
         <Box sx={{backgroundColor: '#FFFFFF', paddingX: 4, paddingY: 2}}>
             <Data label={'Your name'} labelColor={'#008069'} value={username} setFunction={setUsername} maxLength={25} updateUserInformation={updateUserInformation}/>

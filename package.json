@@ -27,10 +27,12 @@
     "react-redux": "^8.1.3",
     "react-router-dom": "^6.19.0",
     "react-scripts": "5.0.1",
+    "react-webcam": "^7.2.0",
     "redux-persist": "^6.0.0",
     "sockjs-client": "^1.6.1",
     "stompjs": "^2.3.3",
     "typescript": "^4.9.5",
+    "wavesurfer.js": "^7.6.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

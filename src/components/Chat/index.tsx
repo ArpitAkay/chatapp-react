@@ -32,7 +32,7 @@ interface ChatParam {
 
 const Index = () => {
   const [chattingList, setChattingList] = useState<UserInfoResponse[]>([]);
-  const [encryptionInfoDialogBox, setEncryptionInfoDialogBox] = useState<boolean>(false);
+  const [isDialogBoxOpen, setIsDialogBoxOpen] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
   const [socketState, setSocketState] = useState<boolean>(false);
   const [isChatBoxClosed, setIsChatBoxClosed] = useState<boolean>(true);
@@ -51,6 +51,10 @@ const Index = () => {
   const [scrollToBottom, setScrollToBottom] = useState<boolean>(false);
   const [scrollToBottomForOlderMessages, setScrollToBottomForOlderMessages] = useState<boolean>(false);
   const isLastPage = useRef<boolean>(true);
+  const [searchValue, setSearchValue] = useState<string>('');
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [filteredChattingList, setFilteredChattingList] = useState<UserInfoResponse[]>([]);
+  const [noResultFound, setNoResultFound] = useState<boolean>(false);
 
   const checkWebSiteStatus = () => {
     window.addEventListener('online', () => {
@@ -315,6 +319,7 @@ const Index = () => {
 
   const handleSelectedChatBoxClick = async (id: number, name: string, profileImageUrl: string | undefined) => {
     pageNo.current = 0;
+    setRightDrawerType(null);
     setIsChatBoxClosed(false);
     const selectedChatBox: UserInfo = {
       id: id,
@@ -383,6 +388,30 @@ const Index = () => {
     event.currentTarget.style.backgroundColor = event.currentTarget.style.backgroundColor === 'rgb(0, 128, 105)' ? 'white' : '#008069';
   }
 
+  const handleSearchForChattingList = async () => {
+    if(!searchValue) {
+      setNoResultFound(false);
+      setFilteredChattingList([]);
+      return;
+    }
+    setSearchLoading(true);
+    const filteredChattingList = chattingList.filter((chatting) => {
+      return chatting.name.toLowerCase().includes(searchValue.toLowerCase()) || 
+      ( chatting.latestMessage != null &&
+        chatting.latestMessage.toLowerCase().includes(searchValue.toLowerCase())
+      );
+    });
+    if(filteredChattingList.length === 0) {
+      setNoResultFound(true);
+      setSearchLoading(false);
+      setFilteredChattingList(filteredChattingList);
+      return;
+    }
+    setNoResultFound(false);
+    setFilteredChattingList(filteredChattingList);
+    setSearchLoading(false);
+  }
+
   useEffect(() => {
     const cleanup = checkWebSiteStatus();
     askNotificationPermission();
@@ -413,13 +442,17 @@ const Index = () => {
     }
   }, [scrollToBottomForOlderMessages]);
 
+  useEffect(() => {
+    handleSearchForChattingList();
+  }, [searchValue])
+
   return (
     <Box sx={{ width: "100vw", height: "100vh", display: "flex" }}>
       <Box sx={{ width: "30%", height: "100%", minWidth: '30%' }}>
         <Navbar avatar={true} avatarUrl={userInfoSelector.imageUrl} showCommunityIcon={true} showStatusIcon={true} showChannelIcon={true} showNewChatIcon={true} showMoreVertSharpIcon={true} chattingListMenuItem={true} setIsChatBoxClosed={setIsChatBoxClosed} setDrawerType={setLeftDrawerType}/>
         <Stack spacing={1} direction={"row"} p={1}>
           <Box width={'88%'} padding={'2px'}>
-              <Searchbar />
+              <Searchbar value={searchValue} setValue={setSearchValue} loading={searchLoading}/>
           </Box>
           <Box sx={{display: 'flex', alignItems: 'center'}}>
             <IconButton sx={{
@@ -430,14 +463,26 @@ const Index = () => {
             </IconButton>
           </Box>
         </Stack>
-        <Paper sx={{maxHeight: '85%', overflowY: 'scroll', scrollbarGutter: 'stable'}}>
+        <Paper sx={{maxHeight: '87.5%', overflowY: 'scroll', scrollbarGutter: 'stable'}}>
           {
             !isOnline && <Box>
               <InternetIssue />
             </Box>
           }
-          {
-            chattingList.map((chatting) => {
+          { noResultFound && <Box sx={{height: '164px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+              <Typography variant="subtitle2" sx={{color: '#8696A0'}}>
+                {searchLoading ? 'Looking for chats, contacts or messages...' : 'No chats, contacts or message found'}
+              </Typography>
+            </Box>
+          }
+          { !noResultFound && (filteredChattingList.length === 0) && chattingList.map((chatting) => {
+              return (
+                <List key={chatting.id} chatBox={chatting} handleSelectedChatBoxClick={handleSelectedChatBoxClick} 
+                />
+              )
+            })
+          }
+          { !(filteredChattingList.length === 0) && filteredChattingList.map((chatting) => {
               return (
                 <List key={chatting.id} chatBox={chatting} handleSelectedChatBoxClick={handleSelectedChatBoxClick} 
                 />
@@ -445,12 +490,12 @@ const Index = () => {
             })
           }
           <Divider />
-          <Stack spacing={0} direction={'row'} display={'flex'} justifyContent={'center'} alignItems={'center'} height={30}>
+          { !noResultFound && (filteredChattingList.length === 0) && <Stack spacing={0} direction={'row'} display={'flex'} justifyContent={'center'} alignItems={'center'} height={30}>
             <LockIcon fontSize="small"/>
-            <Typography variant="caption">Your personal messages are <Link component={'button'} sx={{color: '#027EB5'}} underline="none" onClick={() => setEncryptionInfoDialogBox(true)}>end-to-end encrypted</Link>
-            <Dialog encryptionInfoDialogBox={encryptionInfoDialogBox} setEncryptionInfoDialogBox={setEncryptionInfoDialogBox}/>
+            <Typography variant="caption">Your personal messages are <Link component={'button'} sx={{color: '#027EB5'}} underline="none" onClick={() => setIsDialogBoxOpen(true)}>end-to-end encrypted</Link>
+            <Dialog dialogType="DialogEncryptionInfo" isDialogBoxOpen={isDialogBoxOpen} setIsDialogBoxOpen={setIsDialogBoxOpen}/>
             </Typography>
-          </Stack>
+          </Stack>}
         </Paper>
       </Box>
       <Box

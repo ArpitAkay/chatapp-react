@@ -107,10 +107,17 @@ const Index = (props: NavbarProps) => {
     }
 
     useEffect(() => {
-        setTimeout(() => {
+        if(props.name) {
+            setShowTemporaryButton(true);
+        }
+        const timerId = setTimeout(() => {
             setShowTemporaryButton(false);
-        }, 5000);
-    }, [])
+        }, 3000);
+
+        return () => {
+            clearTimeout(timerId);
+        }
+    }, [props.name]);
 
   return (
     <AppBar position='static' sx={{backgroundColor: '#F0F2F5'}}>

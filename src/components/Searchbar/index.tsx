@@ -1,52 +1,79 @@
-import { InputBase } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { CircularProgress, IconButton, Stack, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ClearIcon from '@mui/icons-material/Clear';
+import { useState } from "react";
 
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: '#F0F2F5',
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    width: "auto",
-  },
-}));
+interface SearchBarProps {
+  value: string;
+  setValue: (value: string) => void;
+  loading: boolean;
+}
 
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
+const Index = (props: SearchBarProps) => {
+  const [selected, setSelected] = useState<boolean>(false);
 
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
-    width: "100%",
-    [theme.breakpoints.up("md")]: {
-      width: "20ch",
-    },
-  },
-}));
-
-const Index = () => {
   return (
-    <Search>
-      <SearchIconWrapper>
-        <SearchIcon sx={{color: 'grey'}}/>
-      </SearchIconWrapper>
-      <StyledInputBase
-        placeholder="Search or start new chat"
-        inputProps={{ "aria-label": "search" }}
-      />
-    </Search>
+    <TextField 
+    variant="outlined" 
+    fullWidth size="small"
+    placeholder="Search or start new chat"
+    value={props.value}
+    onChange={(e) => {
+      setSelected(true);
+      props.setValue(e.target.value)
+    }}
+    InputProps={{
+      startAdornment: (
+        <Stack direction={'row'} paddingRight={'20px'}>
+          { !props.value && !selected &&<IconButton disableRipple >
+            <SearchIcon sx={{color: 'grey'}}/>
+          </IconButton> }
+          { selected &&<IconButton disableRipple onClick={() => {
+            setSelected(false)
+            props.setValue('')
+          }}>
+            <ArrowBackIcon sx={{color: '#008069'}}/>
+          </IconButton>}
+        </Stack>
+      ),
+      endAdornment: (
+        <Stack direction={'row'}>
+          { props.value && !props.loading && <IconButton disableRipple onClick={() => {
+              setSelected(false)
+              props.setValue('')
+            }}>
+            <ClearIcon sx={{color: 'grey'}}/>
+          </IconButton> }
+          { props.loading && <CircularProgress 
+          size='20px' 
+          sx={{
+            color: '#008069',
+            marginTop: '10px'
+          }}
+          /> }
+        </Stack>
+      )
+    }}
+    sx={{
+      backgroundColor: '#F0F2F5',
+      border: 'none',
+      borderRadius: '8px',
+      '& .MuiOutlinedInput-root': {
+        paddingLeft: '0px',
+        paddingRight: '0px',
+        '& fieldset': {
+          border: 'none',
+        },
+        '&:hover fieldset': {
+          border: 'none',
+        },
+        '&.Mui-focused fieldset': {
+          border: 'none',
+        },
+      },
+    }}
+    />
   );
 };
 
